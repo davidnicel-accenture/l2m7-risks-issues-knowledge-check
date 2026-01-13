@@ -1,0 +1,397 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Risk & Issue Knowledge Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #0f172a;        /* slate-900 */
+      --card: #111827;      /* gray-900 */
+      --text: #e5e7eb;      /* gray-200 */
+      --muted: #9ca3af;     /* gray-400 */
+      --accent: #22c55e;    /* green-500 */
+      --accent-2: #f59e0b;  /* amber-500 */
+      --accent-3: #ef4444;  /* red-500 */
+      --border: #1f2937;    /* gray-800 */
+      --focus: #60a5fa;     /* blue-400 */
+    }
+    html, body {
+      background: linear-gradient(120deg, #0f172a 0%, #111827 100%);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 840px;
+      margin: 32px auto;
+      padding: 20px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      padding: 24px;
+    }
+    h1, h2 {
+      margin: 0 0 12px;
+      line-height: 1.25;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .statusbar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 10px 0 20px; font-size: 0.95rem; color: var(--muted);
+    }
+    .progress {
+      height: 8px; background: #0b1220; border-radius: 8px; border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .progress > div {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #22c55e, #3b82f6);
+      transition: width .3s ease;
+    }
+    .question {
+      font-size: 1.1rem; margin-bottom: 16px;
+    }
+    .options {
+      display: grid; gap: 12px;
+    }
+    .option {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: #0b1220; border: 1px solid var(--border);
+      padding: 12px 14px; border-radius: 12px; cursor: pointer;
+    }
+    .option:hover { border-color: #334155; }
+    .radio {
+      flex: none; margin-top: 2px;
+    }
+    .opt-label { display: block; }
+    .opt-hint { color: var(--muted); font-size: 0.92rem; }
+    .controls {
+      display: flex; gap: 12px; margin-top: 18px;
+    }
+    button {
+      appearance: none; border: 1px solid var(--border);
+      background: #0b1220; color: var(--text);
+      padding: 10px 14px; border-radius: 10px; font-weight: 600; cursor: pointer;
+    }
+    button.primary {
+      background: #1e293b; border-color: #334155;
+    }
+    button.primary:disabled {
+      opacity: .55; cursor: not-allowed;
+    }
+    button:focus-visible {
+      outline: 3px solid var(--focus); outline-offset: 2px;
+    }
+    .result {
+      display: grid; gap: 12px; margin-top: 16px;
+    }
+    .score-pill {
+      display: inline-block; padding: 8px 12px; border-radius: 999px;
+      background: #0b1220; border: 1px solid var(--border);
+      font-weight: 700;
+    }
+    .pill-green { color: var(--accent); border-color: #14532d; }
+    .pill-amber { color: var(--accent-2); border-color: #78350f; }
+    .pill-red   { color: var(--accent-3); border-color: #7f1d1d; }
+    .answer-list {
+      background: #0b1220; border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px;
+    }
+    .ans {
+      padding: 10px 8px; border-bottom: 1px dashed #1f2937;
+    }
+    .ans:last-child { border-bottom: none; }
+    .ans b { color: #93c5fd; }
+    .note {
+      color: var(--muted); font-size: 0.9rem;
+    }
+    @media (max-width: 560px) {
+      .container { padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div class="card" aria-live="polite">
+      <h1>Risk &amp; Issue Knowledge Quiz</h1>
+      <p class="subtitle">One question at a time • Score shown at the end • You can resit the quiz.</p>
+
+      <div class="statusbar" aria-hidden="true">
+        <div id="progressText">Question 1 of 10</div>
+        <div class="progress" aria-hidden="true" style="width: 40%; max-width: 360px;">
+          <div id="progressFill"></div>
+        </div>
+      </div>
+
+      <div id="quizArea"></div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Quiz content
+     * Edit only this array to customize questions, options, correct answers, and explanations.
+     */
+    const quizData = [
+      {
+        id: 1,
+        question: "Which statement best distinguishes a risk from an issue?",
+        options: [
+          "Risks are future uncertain events; issues have already occurred or will certainly occur",
+          "Risks always have higher impact than issues",
+          "Issues apply only to suppliers; risks apply only to clients",
+          "Issues cannot be mitigated"
+        ],
+        correctIndex: 0,
+        explanation: "Risk = uncertain event; Issue = already occurring or certain to occur."
+      },
+      {
+        id: 2,
+        question: "Which of the following is NOT a valid Response Strategy?",
+        options: [
+          "Avoid",
+          "Transfer",
+          "Accept",
+          "Monitor"
+        ],
+        correctIndex: 3,
+        explanation: "Core strategies: Avoid, Transfer/Share, Mitigate (probability/impact), Accept. “Monitor” is typically part of Accept, not standalone."
+      },
+      {
+        id: 3,
+        question: "In MMS, which field has the same 250-character limit as the Description?",
+        options: [
+          "Impact",
+          "Response",
+          "Owner",
+          "Probability"
+        ],
+        correctIndex: 1,
+        explanation: "MMS field guidance: Description 250 chars; Response 250 chars."
+      },
+      {
+        id: 4,
+        question: "Which of the following is an example of a task incorrectly written as a risk?",
+        options: [
+          "“Obtain AP55 approvals before proposal submission.”",
+          "“There is a risk AP55 cannot be approved in time causing scope misalignment.”",
+          "“There is a risk supplier pricing is misaligned with client fixed price.”",
+          "“There is a risk subcontractor software may not meet client requirements.”"
+        ],
+        correctIndex: 0,
+        explanation: "Tasks belong in an action log. Risks describe uncertain events with impacts and responses."
+      },
+      {
+        id: 5,
+        question: "HARD SCENARIO — Score the RAG: A subcontractor provides only ROM pricing. Historically their final pricing fluctuated 10–20%. The client demands a fixed-price submission and a ~15% margin hit is expected if supplier pricing increases again. Supplier confirms binding pricing will NOT be provided before proposal submission. What RAG score should be applied?",
+        options: [
+          "Red — high likelihood + major commercial impact",
+          "Amber — medium likelihood + moderate impact",
+          "Green — low likelihood + minor impact",
+          "Amber or Red depending on contractual geography"
+        ],
+        correctIndex: 0,
+        explanation: "Non-binding pricing with notable variability plus material margin exposure → High/Red."
+      },
+      {
+        id: 6,
+        question: "Which response best reflects a Transfer strategy?",
+        options: [
+          "Building contingency buffers into solution pricing",
+          "Tying subcontractor payments to client sign-off",
+          "Changing solution scope to eliminate the root cause",
+          "Improving the accuracy of sizing assumptions"
+        ],
+        correctIndex: 1,
+        explanation: "Back-to-back acceptance shifts burden to supplier—classic transfer."
+      },
+      {
+        id: 7,
+        question: "In the “Buy vs Sell Asymmetric Pricing” examples, what is the primary risk?",
+        options: [
+          "Accenture not receiving client SLAs",
+          "Accenture being unable to recover all costs due to misaligned supplier vs client pricing",
+          "Supplier refusing to agree to confidentiality terms",
+          "Client not accepting contract deliverables"
+        ],
+        correctIndex: 1,
+        explanation: "Buying T&M while selling fixed price creates unrecoverable cost exposure."
+      },
+      {
+        id: 8,
+        question: "In the Delivery Alignment category, the “Sizing Assumptions” risk primarily leads to which impact?",
+        options: [
+          "Loss of deal",
+          "SLA credit exposure",
+          "Margin erosion due to scope or pricing gaps",
+          "Tax penalties"
+        ],
+        correctIndex: 2,
+        explanation: "Misaligned sizing drives cost/service gaps → margin erosion."
+      },
+      {
+        id: 9,
+        question: "What is the strongest indicator that a situation should be written as an issue rather than a risk?",
+        options: [
+          "The likelihood is measured at 25–50%",
+          "The event has already occurred",
+          "It impacts delivery capability",
+          "The impact is low"
+        ],
+        correctIndex: 1,
+        explanation: "Issues are certain/occurred events; risks are uncertain."
+      },
+      {
+        id: 10,
+        question: "Which of the following is a correct example of an Avoid strategy?",
+        options: [
+          "Replacing a subcontractor whose software functionality depends on uncommitted roadmap items",
+          "Increasing governance effort for a difficult supplier",
+          "Adding assumptions and contingencies to pricing",
+          "Negotiating back-to-back variable pricing with the client"
+        ],
+        correctIndex: 0,
+        explanation: "Avoid eliminates the cause (e.g., remove roadmap dependency). Others are Mitigate/Transfer."
+      }
+    ];
+
+    // --- Quiz engine (one question at a time) ---
+    const quizArea = document.getElementById('quizArea');
+    const progressText = document.getElementById('progressText');
+    const progressFill = document.getElementById('progressFill');
+
+    let currentIndex = 0;
+    const selections = new Array(quizData.length).fill(null);
+
+    function renderQuestion() {
+      const q = quizData[currentIndex];
+
+      progressText.textContent = `Question ${currentIndex + 1} of ${quizData.length}`;
+      progressFill.style.width = `${((currentIndex) / quizData.length) * 100}%`;
+
+      quizArea.innerHTML = `
+        <div>
+          <h2>Question ${currentIndex + 1}</h2>
+          <div class="question">${escapeHTML(q.question)}</div>
+          <div class="options" role="group" aria-label="Options for Question ${currentIndex + 1}">
+            ${q.options.map((opt, i) => `
+              <label class="option" tabindex="0" data-index="${i}">
+                <input class="radio" type="radio" name="q${q.id}" value="${i}" ${selections[currentIndex] === i ? 'checked' : ''} />
+                <span class="opt-label">
+                  <b>${String.fromCharCode(65 + i)}.</b> ${escapeHTML(opt)}
+                </span>
+              </label>
+            `).join('')}
+          </div>
+          <div class="controls">
+            <button class="secondary" id="prevBtn" ${currentIndex === 0 ? 'disabled' : ''}>Back</button>
+            <button class="primary" id="nextBtn" ${selections[currentIndex] === null ? 'disabled' : ''}>${currentIndex === quizData.length - 1 ? 'Submit' : 'Next'}</button>
+          </div>
+        </div>
+      `;
+
+      // Event bindings
+      document.querySelectorAll('.option').forEach(lbl => {
+        lbl.addEventListener('click', () => {
+          const idx = parseInt(lbl.getAttribute('data-index'), 10);
+          selections[currentIndex] = idx;
+          renderQuestion(); // re-render to enable Next
+        });
+        lbl.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const idx = parseInt(lbl.getAttribute('data-index'), 10);
+            selections[currentIndex] = idx;
+            renderQuestion();
+          }
+        });
+      });
+
+      document.getElementById('prevBtn').addEventListener('click', () => {
+        if (currentIndex > 0) {
+          currentIndex--;
+          renderQuestion();
+        }
+      });
+
+      document.getElementById('nextBtn').addEventListener('click', () => {
+        if (selections[currentIndex] === null) return;
+        if (currentIndex < quizData.length - 1) {
+          currentIndex++;
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      });
+    }
+
+    function showResults() {
+      const score = selections.reduce((acc, sel, i) => {
+        const correct = quizData[i].correctIndex;
+        return acc + (sel === correct ? 1 : 0);
+      }, 0);
+
+      progressText.textContent = "Quiz complete";
+      progressFill.style.width = "100%";
+
+      const scoreClass =
+        score >= 8 ? 'pill-green' : score >= 5 ? 'pill-amber' : 'pill-red';
+
+      const answersHTML = quizData.map((q, i) => {
+        const userIdx = selections[i];
+        const userAns = userIdx !== null ? `${String.fromCharCode(65 + userIdx)}. ${escapeHTML(q.options[userIdx])}` : "No answer";
+        const correctAns = `${String.fromCharCode(65 + q.correctIndex)}. ${escapeHTML(q.options[q.correctIndex])}`;
+        const isCorrect = userIdx === q.correctIndex;
+
+        return `
+          <div class="ans">
+            <b>Q${i + 1}:</b> ${escapeHTML(q.question)}<br/>
+            <span class="${isCorrect ? 'pill-green' : 'pill-red'} score-pill">${isCorrect ? 'Correct' : 'Incorrect'}</span><br/>
+            <b>Your answer:</b> ${userAns}<br/>
+            <b>Correct answer:</b> ${correctAns}<br/>
+            <span class="note">${escapeHTML(q.explanation)}</span>
+          </div>
+        `;
+      }).join('');
+
+      quizArea.innerHTML = `
+        <div class="result">
+          <h2>Your Score</h2>
+          <div class="score-pill ${scoreClass}"> ${score} / ${quizData.length} </div>
+          <div class="answer-list">
+            ${answersHTML}
+          </div>
+          <div class="controls">
+            <button class="primary" id="retakeBtn">Retake Quiz</button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('retakeBtn').addEventListener('click', () => {
+        currentIndex = 0;
+        for (let i = 0; i < selections.length; i++) selections[i] = null;
+        renderQuestion();
+      });
+    }
+
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Bootstrap
+    renderQuestion();
+  </script>
+</body>
+</html>
